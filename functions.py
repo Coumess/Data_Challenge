@@ -1,3 +1,22 @@
+import json
+
+def load_json(file_path):
+    """
+    Loads a JSON file and returns its content.
+
+    Args:
+        file_path (str): The path to the JSON file.
+
+    Returns:
+        list/dict: The parsed JSON data.
+    """
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    
+    return data
+
+# =========================================================================================
+
 def get_defect_coordinates(json_data, image_number):
     """
     Parses JSON data to extract defect coordinates for a specific image number.
@@ -20,8 +39,8 @@ def get_defect_coordinates(json_data, image_number):
                 
                 defect_dict[x_coord] = {
                     'start': item.get('y_start', []), 
-                    'stop': item.get('y_stop', [])
+                    'stop': item.get('y_stop', []),
+                    'type': item.get('name', [])
                 }
 
     return defect_dict
-
