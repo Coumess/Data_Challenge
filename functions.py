@@ -38,8 +38,7 @@ def get_defect_coordinates(json_data, image_number):
             for x_coord in item.get('x_coord', []):
                 
                 defect_dict[x_coord] = {
-                    'start': item.get('y_start', []), 
-                    'stop': item.get('y_stop', []),
+                    'ycords': (list(zip(item.get('y_start', []),item.get('y_stop', [])))),
                     'type': item.get('name', [])
                 }
 
