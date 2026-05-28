@@ -102,7 +102,7 @@ def detecter_et_mesurer_defauts_complet(image, hauteur_bande=50, train_cells=4, 
         projection_bande = np.median(bande, axis=0)
         
         # On applique le CFAR
-        bruit_de_fond_local = convolve1d(projection_bande, noyau, mode='nearest')
+        bruit_de_fond_local = convolve1d(projection_bande, noyau, mode='reflect')
         
         # Tolérance locale pour cette bande spécifique
         ecart_type_bande = np.std(projection_bande)
