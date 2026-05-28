@@ -54,7 +54,7 @@ def get_defect_coordinates(json_data, image_number):
 # Detect Methods Functions :
 # ===========================================================================
 
-def detecter_et_mesurer_defauts_complet(image, hauteur_bande=30, train_cells=4, guard_cells=2, multiplicateur_rupture=3):
+def detecter_et_mesurer_defauts_complet(image, hauteur_bande=50, train_cells=4, guard_cells=2, multiplicateur_rupture=3):
     """
     Pipeline complet de détection et mesure des colonnes défectueuses (entières et fragmentées).
     
