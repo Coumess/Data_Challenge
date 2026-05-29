@@ -1,5 +1,4 @@
-import os, csv, json, numpy as np
-import cv2
+import os, csv, json, cv2, numpy as np
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
@@ -19,12 +18,13 @@ def process_json(data):
         indices += c["x_coord"]
     return np.array(indices, dtype=int)
 
-def load_pair(gt_path, res_path):
+def load_pair(gt_path, def_path, res_path):
     """Lit deux images en float32 (sans copie supplémentaire)."""
     # -1 = IMREAD_UNCHANGED for 16bits images
     gt  = cv2.imread(gt_path, -1).astype(np.float32, copy=False)
+    default = cv2.imread(def_path, -1).astype(np.float32, copy=False)
     res = cv2.imread(res_path, -1).astype(np.float32, copy=False)
-    return gt, res
+    return gt, default, res
 
 # -------------------------------------------------
 # Evaluation
@@ -50,6 +50,7 @@ def evaluate_sequence(args):
 
     # List of files
     gt_files = sorted([os.path.join(gt_path, f) for f in os.listdir(gt_path) if f.lower().endswith(".png")])
+    def_files = sorted([os.path.join(def_path, f) for f in os.listdir(gt_path) if f.lower().endswith(".png")])
     res_files = sorted([os.path.join(res_path, f) for f in os.listdir(res_path) if f.lower().endswith(".png")])
     if len(gt_files) != len(res_files):
         return None
@@ -61,18 +62,19 @@ def evaluate_sequence(args):
 
     # Parallel reading
     with ThreadPoolExecutor(max_workers=4) as pool:
-        for gt_f, res_f in zip(gt_files, res_files):
-            gt, res = pool.submit(load_pair, gt_f, res_f).result()
+        for gt_f, def_f, res_f in zip(gt_files, def_files, res_files):
+            gt, default, res = pool.submit(load_pair, gt_f, def_f, res_f).result()
 
             # Residuals by column
-            residu_sq = ((res - gt) ** 2).sum(axis=0)
-            detected = np.flatnonzero(residu_sq)
+            residu_detect = ((res - default) ** 2).sum(axis=0)
+            detected = np.flatnonzero(residu_detect)
 
             # TP / FP / FN
             tp += np.intersect1d(detected, true_def, assume_unique=True).size
             fp += np.setdiff1d(detected, true_def, assume_unique=True).size
             fn += np.setdiff1d(true_def, detected, assume_unique=True).size
 
+            residu_sq = ((res - gt) ** 2).sum(axis=0)
             # Separated RMSE
             mask_def = true_mask
             mask_ok  = ~true_mask
@@ -84,7 +86,7 @@ def evaluate_sequence(args):
             cnt_ok += mask_ok.sum() * gt.shape[0]
 
     # Normalization by number of columns
-    nb_cols_f = float(nb_cols)
+    nb_cols_f = float(nb_cols * len(gt_files))
     tp /= nb_cols_f; fp /= nb_cols_f; fn /= nb_cols_f
 
     # Metrics
@@ -126,7 +128,7 @@ def evaluate_sequence(args):
 # Main
 # -------------------------------------------------
 if __name__ == "__main__":
-    root_path = r"C:\Users\eliot\Desktop\Obsidian Vault\03. Cours\S2\Data_Challenge\train"
+    root_path = r"\\bimap-data.lynred.net\temp\Data challenge 2026\dataset2026\test"
     sensors   = ["HD", "SXGA", "VGA"]
     csv_path  = os.path.join(root_path, "results.csv")
 
