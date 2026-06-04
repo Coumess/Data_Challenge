@@ -74,7 +74,7 @@ def evaluate_sequence(args):
     gt_path  = os.path.join(seq_path, "low dyn")
     def_path = os.path.join(seq_path,
                              f"low dyn with columns {simulation_idx}")
-    res_path = os.path.join(seq_path, "low dyn")
+    res_path = os.path.join(def_path, "results")
 
     # Verifications
     if not (os.path.isdir(gt_path) and os.path.isdir(def_path) and os.path.isdir(res_path)):
